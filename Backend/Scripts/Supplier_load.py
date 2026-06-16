@@ -107,11 +107,20 @@ def build_payload(row: dict) -> dict:
     def val(col: str) -> str:
         v = row.get(col)
         return str(v).strip() if v is not None else ""
- 
+
+    def bool_val(col: str) -> bool:
+        return val(col).lower() == "yes"
+
+    def float_val(col: str) -> float:
+        return float(val(col) or 0)
+
+    def int_val(col: str) -> int:
+        return int(float(val(col) or 0))
+
     supplier_code = val("Supplier")
     shared_set    = val("Shared Set")
     uri           = f"urn:be:com.qad.base.supplier.ISupplierV2:{shared_set}.{supplier_code}"
- 
+
     return {
         "supplementaryMessages": [],
         "supplierV2s": [
@@ -120,12 +129,10 @@ def build_payload(row: dict) -> dict:
                 "uri":                                      uri,
                 "instanceURI":                              uri,
                 "supplierCode":                             supplier_code,
-                "supplierTypeCode":                         val("Supplier Type"),
-                "purchaseTypeCode":                         val("Purchase type"),
                 "supplierID":                               0,
                 "sharedSetCode":                            shared_set,
                 "sharedSetID":                              0,
- 
+
                 # ── Business Relation ─────────────────────────────────────────
                 "businessRelationCode":                     val("Business Relation"),
                 "businessRelationID":                       0,
@@ -139,7 +146,7 @@ def build_payload(row: dict) -> dict:
                 "isCreateBusinessRelationRequired":         True,
                 "isInternalEntity":                         False,
                 "intercompanyCode":                         "",
- 
+
                 # ── Address ───────────────────────────────────────────────────
                 "addressID":                                0,
                 "addressName":                              val("Name"),
@@ -153,6 +160,8 @@ def build_payload(row: dict) -> dict:
                 "cityCode":                                 "",
                 "zipCode":                                  val("Postal Code"),
                 "stateCode":                                val("State"),
+                "stateDescription":                         "",
+                "stateTax":                                 val("State Tax"),
                 "countryCode":                              val("Country"),
                 "countryDescription":                       "",
                 "countyCode":                               "",
@@ -161,7 +170,7 @@ def build_payload(row: dict) -> dict:
                 "latitude":                                 0,
                 "longitude":                                0,
                 "isTemporaryAddress":                       False,
- 
+
                 # ── Status / Concurrency ──────────────────────────────────────
                 "changeStatus":                             "2",
                 "dataOperation":                            "",
@@ -173,30 +182,38 @@ def build_payload(row: dict) -> dict:
                 "lastModifiedDate":                         "",
                 "lastModifiedTime":                         0,
                 "lastModifiedUser":                         "",
- 
-                # ── Active ────────────────────────────────────────────────────
-                "isActive":                                 val("Active").lower() == "yes",
- 
+
+                # ── Active / Type ─────────────────────────────────────────────
+                "isActive":                                 bool_val("Active"),
+                "supplierTypeCode":                         val("Supplier Type"),
+                "supplierTypeID":                           0,
+                "supplierTypeDescription":                  "",
+                "purchaseTypeCode":                         val("Purchase Type"),
+                "purchaseTypeID":                           0,
+                "purchaseTypeDescription":                  "",
+                "purchaseCodeID":                           0,
+
                 # ── Currency / Language ───────────────────────────────────────
                 "currencyCode":                             val("Currency"),
                 "currencyDescription":                      "",
                 "currencyID":                               0,
                 "languageCode":                             val("Language"),
                 "languageDescription":                      "",
- 
+
                 # ── Credit Terms ──────────────────────────────────────────────
                 "creditTermsCode":                          val("Credit Terms"),
-                "creditTermsDescription":                   "",
                 "creditTermsID":                            0,
-                "creditTermsType":                          "",
+                "creditTermsDescription":                   "",
                 "normalCreditTermsID":                      0,
-                "normalCreditTermsType":                    "NORMAL",
- 
+                "normalCreditTermsType":                    "",
+
                 # ── Invoice / Status ──────────────────────────────────────────
                 "invoiceStatusCode":                        val("Invoice Status"),
                 "invoiceStatusDescription":                 "",
                 "invoiceStatusID":                          0,
- 
+                "isIndividualPayments":                     False,
+                "isSplitAccount":                           False,
+
                 # ── GL Profiles ───────────────────────────────────────────────
                 "invoiceControlGLProfileCode":              val("Invoice Control GL Profile"),
                 "invoiceControlGLProfileDesc":              "",
@@ -211,88 +228,76 @@ def build_payload(row: dict) -> dict:
                 "purchaseAccountProfileDesc":               "",
                 "purchaseAccountGLProfileID":               0,
                 "financeChargeGLProfileID":                 0,
- 
+
                 # ── Tax ───────────────────────────────────────────────────────
                 "taxZone":                                  val("Tax Zone"),
                 "taxZoneDescription":                       "",
-                "taxClass":                                 "",
+                "taxClass":                                 val("Tax Class" or ""),
                 "taxClassDescription":                      "",
                 "taxDeclaration":                           0,
-                "taxUsage":                                 "",
+                "taxUsage":                                 val("Tax Usuage"),   # note: matches Excel typo
                 "taxUsageDescription":                      "",
                 "taxLevel":                                 "",
                 "taxNature":                                "SERVICE",
-                "isTaxableSupplier":                        False,
-                "isTaxInCity":                              True,
-                "isTaxIncluded":                            False,
-                "isTaxReport":                              False,
-                "isTaxConfirmed":                           False,
-                "isTaxReportForBusinessRelation":           False,
-                "federalTax":                               "",
-                "miscellaneousTax1":                        "",
-                "miscellaneousTax2":                        "",
-                "miscellaneousTax3":                        "",
-                "stateTax":                                 "",
                 "taxIDFiscalCode":                          "",
                 "foreignFiscalCode":                        "",
+                "chamberOfCommerceNumber":                  "",
+                "birthCity":                                "",
+                "TIDNotice":                                "",
+                "whtCertFormatCode":                        "",
+                "whtCertFormatDescription":                 "",
+                "whtCertFormatID":                          0,
+                "isTaxableSupplier":                        bool_val("Taxable (Yes/No)"),
+                "isTaxInCity":                              bool_val("Tax in City(Yes/No)"),
+                "isTaxIncluded":                            bool_val("Tax Included(Yes/No)"),
+                "isTaxReport":                              bool_val("Tax Report"),
+                "isTaxReportForBusinessRelation":           False,
+                "isTaxConfirmed":                           False,
+                "isWithholdingTax":                         False,
+                "isLastFiling":                             False,
+                "isReportedIN":                             False,
+                "federalTax":                               val("Federal tax"),
+                "stateTax":                                 val("State Tax"),
+                "miscellaneousTax1":                        val("Miscellaneous Tax 1"),
+                "miscellaneousTax2":                        val("Miscellaneous Tax 2"),
+                "miscellaneousTax3":                        val("Miscellaneous Tax 3"),
                 "nameControl":                              "",
                 "EORINumber":                               "",
- 
-                # ── Contact ───────────────────────────────────────────────────
-                "telephone":                                val("Telephone"),
-                "fax":                                      "",
-                "EMail":                                    val("Email"),
-                "webSite":                                  "",
-                "commentNote":                              "",
-                "chamberOfCommerceNumber":                  "",
- 
+
                 # ── Payment ───────────────────────────────────────────────────
                 "paymentGroupCode":                         "",
                 "paymentGroupDescription":                  "",
                 "paymentGroupID":                           0,
-                "isIndividualPayments":                     False,
                 "isPayBankCharge":                          False,
                 "isCompensationAllowed":                    False,
-                "isSplitAccount":                           False,
- 
+                "externalCustomerNumber":                   "",
+                "deliveryConditionID":                      0,
+
                 # ── Remittance ────────────────────────────────────────────────
                 "isRemittanceRequired":                     False,
                 "isSendRemittance":                         False,
-                "remittanceAddressTypeCode":                "REMITTANCE",
                 "remittanceAddressChangeStatus":            "",
+                "remittanceAddressTypeCode":                "",
                 "remitSupplierContactV2s":                  [],
- 
-                # ── Withholding Tax ───────────────────────────────────────────
-                "isWithholdingTax":                         False,
-                "whtCertFormatCode":                        "",
-                "whtCertFormatDescription":                 "",
-                "whtCertFormatID":                          0,
- 
-                # ── Corporate / Purchase ──────────────────────────────────────
+
+                # ── Corporate Group ───────────────────────────────────────────
                 "corporateGroupCode":                       "",
                 "corporateGroupDescription":                "",
                 "corporateGroupID":                         0,
-                "purchaseTypeCode":                         "",
-                "purchaseTypeDescription":                  "",
-                "purchaseTypeID":                           0,
-                "purchaseCodeID":                           0,
-                "deliveryConditionID":                      0,
- 
-                # ── Credit / Fiscal ────────────────────────────────────────────
-                "creditAgencyReference":                    "",
-                "isLastFiling":                             False,
-                "isReportedIN":                             False,
- 
-                # ── Sub-Address ───────────────────────────────────────────────
+
+                # ── Sub Account ───────────────────────────────────────────────
                 "subAccountProfileCode":                    "",
                 "subAccountProfileDesc":                    "",
                 "subAccountProfileID":                      0,
- 
-                # ── External References ───────────────────────────────────────
-                "externalCustomerNumber":                   "",
-                "birthCity":                                "",
-                "TIDNotice":                                "",
- 
+
+                # ── Contact ───────────────────────────────────────────────────
+                "EMail":                                    val("Email"),
+                "fax":                                      "",
+                "telephone":                                val("Telephone"),
+                "webSite":                                  "",
+                "commentNote":                              "",
+                "creditAgencyReference":                    "",
+
                 # ── Custom Fields ─────────────────────────────────────────────
                 "customShort0":  "", "customShort1":  "", "customShort2":  "",
                 "customShort3":  "", "customShort4":  "", "customShort5":  "",
@@ -312,14 +317,13 @@ def build_payload(row: dict) -> dict:
                 "customDecimal3": 0, "customDecimal4": 0,
                 "customInteger0": 0, "customInteger1": 0, "customInteger2": 0,
                 "customInteger3": 0, "customInteger4": 0,
- 
+
                 # ── Sub-lists ─────────────────────────────────────────────────
                 "supplierContactV2s":                       [],
                 "supplierSafDefaultV2s":                    [],
+                "supplierVatV2s":                           [],
                 "bankNumberRefV2s":                         [],
                 "MDMBankNrSharedSets":                      [],
-                "supplierVatV2s":                           [],
-                "remitSupplierContactV2s":                  [],
             }
         ],
     }
@@ -379,6 +383,14 @@ def post_supplier(payload: dict, token: str, is_create: bool = False) -> tuple[b
         return True, ""
 
     errors    = submit.get("errors", [])
+
+    # ── DEBUG: print exact field names QAD rejected ───────────────────────
+    import json
+    print(f"\nDEBUG post_supplier full response:")
+    print(json.dumps(resp_json.get("submitResult", {}), indent=2))
+    #---- DEBUG END ------------------------------------
+
+
     error_msg = "; ".join(
         e.get("message", "").strip()
         for e in errors
