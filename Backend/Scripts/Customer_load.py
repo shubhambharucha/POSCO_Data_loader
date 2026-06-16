@@ -36,6 +36,7 @@ import json
 import requests
 import openpyxl
 from openpyxl.styles import PatternFill
+from datetime import datetime
 
 # ── Path / config ─────────────────────────────────────────────────────────
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -108,6 +109,25 @@ def build_payload(row: dict) -> dict:
         v = row.get(col)
         return str(v).strip() if v is not None else ""
 
+    def bool_val(col: str) -> bool:
+        return val(col).lower() == "yes"
+
+    def float_val(col: str) -> float:
+        return float(val(col) or 0)
+
+    def int_val(col: str) -> int:
+        return int(float(val(col) or 0))
+
+    def date_val(col: str) -> str:
+        v = val(col)
+        if not v:
+            return ""
+        try:
+            #adjust input format based on source (excel date format)
+            return datetime.strtime(v, "%d-%m-%Y").strftime("%Y-%m-%d")
+        except:
+            return ""
+
     customer_code = val("Customer")
     shared_set    = val("Shared Set")
     uri           = f"urn:be:com.qad.base.customer.ICustomerV2:{shared_set}.{customer_code}"
@@ -152,7 +172,7 @@ def build_payload(row: dict) -> dict:
                 "zipCode":                                  val("Postal Code"),
                 "stateCode":                                val("State"),
                 "stateDescription":                         "",
-                "stateTax":                                 "",
+                "stateTax":                                 val("State Tax"),
                 "countryCode":                              val("Country"),
                 "countryDescription":                       "",
                 "countyCode":                               "",
@@ -175,7 +195,7 @@ def build_payload(row: dict) -> dict:
                 "lastModifiedUser":                         "",
 
                 # ── Active / Type ─────────────────────────────────────────────
-                "isActive":                                 val("Active").lower() == "yes",
+                "isActive":                                 bool_val("Active"),
                 "customerTypeCode":                         val("Customer Type"),
                 "customerTypeID":                           0,
 
@@ -244,22 +264,23 @@ def build_payload(row: dict) -> dict:
                 # ── Tax ───────────────────────────────────────────────────────
                 "taxZone":                                  val("Tax Zone"),
                 "taxZoneDescription":                       "",
-                "taxClass":                                 "",
+                "taxClass":                                 val("Tax Class"),
                 "taxClassDescription":                      "",
                 "taxDeclaration":                           0,
-                "taxUsage":                                 "",
+                "taxUsage":                                 val("Tax Usage"),
                 "taxUsageDescription":                      "",
-                "isTaxable":                                True,
-                "isTaxInCity":                              True,
-                "isTaxIncluded":                            False,
-                "isTaxReport":                              False,
+                "isTaxable":                                bool_val("Taxable(Yes/No)"),
+                "isTaxInCity":                              bool_val("Tax in City(Yes/No)"),
+                "isTaxIncluded":                            bool_val("Tax Included(Yes/No)"),
+                "isTaxReport":                              bool_val("Tax Report"),
                 "isLastFiling":                             False,
                 "isReportedIN":                             False,
                 "isElectronicInvoiceIN":                    False,
-                "federalTax":                               "",
-                "miscellaneousTax1":                        "",
-                "miscellaneousTax2":                        "",
-                "miscellaneousTax3":                        "",
+                "federalTax":                               val("Federal Tax"),
+                "stateTax":                                 val("State Tax"),
+                "miscellaneousTax1":                        val("Miscellaneous Tax 1"),
+                "miscellaneousTax2":                        val("Miscellaneous Tax 2"),
+                "miscellaneousTax3":                        val("Miscellaneous Tax 3"),
                 "customerGTVatTransType":                   "",
                 "vatDeliveryType":                          "",
                 "vatPercentageLevel":                       "",
@@ -267,35 +288,36 @@ def build_payload(row: dict) -> dict:
                 "EORINumber":                               "",
 
                 # ── Credit Limit ──────────────────────────────────────────────
-                "fixedCreditLimit":                         float(val("Fixed Credit Limit") or 0),
+                "fixedCreditLimit":                         float_val("Fixed Credit Limit"), #done
                 "highCredit":                               0,
-                "isFixedCreditLimit":                       True,
-                "isLockedCreditLimit":                      val("Credit Hold").lower() == "yes", #Credit Hold field ##IMPORTANT
+                "isFixedCreditLimit":                       bool_val("Apply Fixed Ceiling"), #done
+                "isTurnOverCreditLimit":                    bool_val("Apply % of Turnover"), #done
+                "isMaxDaysOverdueCreditLimit":              bool_val("Apply Maximum Days Overdue"), #done 
+                "maxDaysCreditLimit":                       int_val("Maximum Days Overdue"), #done
+                "turnoverCreditLimitPercent":               float_val("Percentage of Turnover"), #done
+                "isLockedCreditLimit":                      bool_val("Credit Hold"), #done
                 "isToBeLockedCreditLimit":                  False,
-                "isOverruleAllowedSOCreditLimit":           True,
-                "isCheckBeforeSOCreditLimit":               False,
-                "isCheckAfterSOCreditLimit":                False,
-                "isCheckBeforeInvoiceCreditLimit":          False,
-                "isCheckAfterInvoiceCreditLimit":           False,
-                "isOverAllowedInvoiceCreditLimit":          False,
-                "isIncludeDraftCreditLimit":                False,
-                "isIncludeOpenItemsCreditLimit":            True,
-                "isIncludeSOCheckCreditLimit":              False,
-                "isMaxDaysOverdueCreditLimit":              False,
-                "isTurnOverCreditLimit":                    False,
-                "maxDaysCreditLimit":                       0,
+                "warningCreditLimitPercent":                float_val("Warning Ceiling %"), #done
+                "creditAgencyReference":                    val("Credit Agency Ref"), #done
+                "creditRatingCode":                         val("Credit Rating"),#done
+                "creditRatingID":                           0,
+
+                # ── Credit Check ──────────────────────────────────────────────
+                "isOverruleAllowedSOCreditLimit":           bool_val("Overrule Allowed SO(Yes/No)"),
+                "isCheckBeforeSOCreditLimit":               bool_val("Calculate before Order Entry(Yes/No)"),
+                "isCheckAfterSOCreditLimit":                bool_val("Calculate after Order Entry(Yes/No)"),
+                "isCheckBeforeInvoiceCreditLimit":          bool_val("Calculate before Invoice(Yes/No)"),
+                "isCheckAfterInvoiceCreditLimit":           bool_val("Calculate after Invoice Entry(Yes/No)"),
+                "isOverAllowedInvoiceCreditLimit":          bool_val("Overrule Allowed Invoice(Yes/No)"),
+                "isIncludeDraftCreditLimit":                bool_val("Include Drafts(Yes/No)"),
+                "isIncludeOpenItemsCreditLimit":            bool_val("Include Open Items(Yes/No)"),
+                "isIncludeSOCheckCreditLimit":              bool_val("Include Sales Orders(Yes/No)"),
                 "overToleranceAmount":                      0,
                 "overTolerancePercent":                     0,
                 "shortToleranceAmount":                     0,
                 "shortTolerancePercent":                    0,
-                #"toleranceAt":                              "",
-                "warningCreditLimitPercent":                0,
-                "turnoverCreditLimitPercent":               0,
                 "totalDaysLate":                            0,
                 "totalNumberOfInvoices":                    0,
-                "creditRatingCode":                         val("Credit Rating" or ""),  #IMPORTANT
-                "creditRatingID":                           0,
-                "creditAgencyReference":                    "",
 
                 # ── Finance Charges / Reminders / Statements ──────────────────
                 "isFinanceCharge":                          False,
@@ -342,7 +364,7 @@ def build_payload(row: dict) -> dict:
                 "commentNote":                              "",
 
                 # ── Deduction ─────────────────────────────────────────────────
-                "customerIsInclDeduction":                  False,
+                "customerIsInclDeduction":                  bool_val("Include Deductions"),
 
                 # ── Custom Fields ─────────────────────────────────────────────
                 "customShort0":  "", "customShort1":  "", "customShort2":  "",
