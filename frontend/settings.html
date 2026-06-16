@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Settings — QAD Data Loader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:#050e09;
+  color:#d4e8d8;
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+:root{
+  --green:#00e676;
+  --green-dim:rgba(0,230,118,.08);
+  --green-border:rgba(0,230,118,.25);
+  --green-glow:rgba(0,230,118,.22);
+  --surface:rgba(255,255,255,.03);
+  --border:rgba(255,255,255,.07);
+  --muted:#527060;
+  --muted2:#2a3d30;
+  --mono:'DM Mono',monospace;
+  --red:#dc5050;
+  --red-dim:rgba(220,80,80,.08);
+  --red-border:rgba(220,80,80,.25);
+}
+
+/* ── NAV ── */
+#nav{
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+  border-bottom:1px solid var(--border);
+  background:#050e09;
+  position:sticky;top:0;z-index:100;
+}
+.nav-back{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:12px;
+  color:var(--muted);text-decoration:none;
+  letter-spacing:.04em;
+  transition:color .2s;
+}
+.nav-back:hover{color:var(--green)}
+.nav-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{
+  font-family:var(--mono);font-size:12px;
+  color:#fff;letter-spacing:.08em;text-transform:uppercase;
+}
+.nav-logo img{height:80px;object-fit:contain;padding-top:4px;}
+
+/* ── LAYOUT ── */
+.page{
+  max-width:720px;
+  margin:0 auto;
+  padding:48px 24px 80px;
+}
+
+/* ── PAGE HEADER ── */
+.page-hdr{
+  margin-bottom:40px;
+}
+.page-hdr h1{
+  font-size:28px;font-weight:700;
+  color:#fff;letter-spacing:-.02em;
+  margin-bottom:6px;
+}
+.page-hdr p{
+  font-size:13px;color:var(--muted);
+  font-family:var(--mono);
+}
+
+/* ── SECTION ── */
+.section{
+  margin-bottom:36px;
+}
+.section-label{
+  font-family:var(--mono);font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--green);opacity:.7;
+  margin-bottom:16px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+
+/* ── FIELD ── */
+.field{
+  margin-bottom:18px;
+}
+.field label{
+  display:block;
+  font-size:13px;font-weight:500;
+  color:#fff;
+  margin-bottom:6px;
+  letter-spacing:-.01em;
+}
+.field .hint{
+  font-family:var(--mono);font-size:10px;
+  color:var(--muted);margin-bottom:6px;
+  display:block;
+}
+
+/* ── INPUT ── */
+input[type=text],
+input[type=password],
+input[type=url]{
+  width:100%;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;
+  color:var(--muted);
+  font-family:var(--mono);font-size:13px;
+  padding:10px 14px;
+  outline:none;
+  transition:border-color .2s, box-shadow .2s, color .2s;
+}
+input[type=text]:focus,
+input[type=password]:focus,
+input[type=url]:focus{
+  border-color:var(--green-border);
+  box-shadow:0 0 0 3px rgba(0,230,118,.08);
+  color:#fff;
+}
+/* path fields get green tint when filled */
+input.path-field:not(:placeholder-shown){
+  border-color:rgba(0,230,118,.2);
+  color:var(--green);
+}
+input.path-field:focus{
+  border-color:var(--green-border);
+  box-shadow:0 0 0 3px rgba(0,230,118,.08);
+  color:#fff;
+}
+
+/* ── FOLDERS GRID ── */
+.folders-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+@media(max-width:560px){
+  .folders-grid{grid-template-columns:1fr;}
+}
+
+/* ── ACTION BAR ── */
+.action-bar{
+  display:flex;align-items:center;gap:12px;
+  padding-top:32px;
+  border-top:1px solid var(--border);
+  margin-top:40px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:10px 28px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;gap:8px;
+  border:1px solid transparent;
+}
+.btn-primary{
+  background:var(--green);
+  color:#050e09;
+  border-color:var(--green);
+  font-weight:600;
+}
+.btn-primary:hover{
+  box-shadow:0 0 20px var(--green-glow);
+  background:#1aff8a;
+}
+.btn-primary:disabled{
+  opacity:.4;cursor:not-allowed;
+}
+.btn-ghost{
+  background:transparent;
+  color:var(--green);
+  border-color:rgba(0,230,118,.2);
+}
+.btn-ghost:hover{
+  background:var(--green-dim);
+  border-color:var(--green-border);
+}
+.btn-ghost:disabled{
+  opacity:.4;cursor:not-allowed;
+}
+
+/* ── STATUS TOAST ── */
+#toast{
+  display:none;
+  align-items:center;gap:10px;
+  padding:10px 16px;
+  border-radius:6px;
+  font-family:var(--mono);font-size:12px;
+  margin-left:auto;
+  transition:all .3s;
+}
+#toast.ok{
+  background:rgba(0,230,118,.08);
+  border:1px solid rgba(0,230,118,.2);
+  color:var(--green);
+  display:flex;
+}
+#toast.err{
+  background:var(--red-dim);
+  border:1px solid var(--red-border);
+  color:var(--red);
+  display:flex;
+}
+.toast-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:currentColor;flex-shrink:0;
+}
+
+/* ── SPINNER ── */
+.spin{
+  width:11px;height:11px;
+  border:1.5px solid rgba(0,0,0,.2);
+  border-top-color:#050e09;
+  border-radius:50%;
+  animation:spin .6s linear infinite;
+  display:none;
+}
+.btn-ghost .spin{
+  border-color:rgba(0,230,118,.2);
+  border-top-color:var(--green);
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── DIVIDER ── */
+.sect-divider{
+  border:none;border-top:1px solid var(--border);
+  margin:32px 0;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Loader
+  </a>
+  <span class="nav-title">Settings</span>
+  <a href="index.html" class="nav-logo">
+    <img src="public/logo.png" alt="Yash Technologies"/>
+  </a>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+
+  <div class="page-hdr">
+    <h1>Configuration</h1>
+    <p>QAD connection &amp; data folder paths — saved to config.json</p>
+  </div>
+
+  <!-- ── SECTION 1: OAuth / QAD Connection ── -->
+  <div class="section">
+    <div class="section-label">QAD Connection</div>
+
+    <div class="field">
+      <label>Base URL</label>
+      <span class="hint">The root URL of your QAD Cloud ERP instance</span>
+      <input type="url" id="base_url" placeholder="https://your-instance.adaptive.qad.com/clouderp"/>
+    </div>
+
+    <div class="field">
+      <label>Client ID</label>
+      <span class="hint">OAuth2 client_id for API access</span>
+      <input type="text" id="client_id" placeholder="afb97fd2..."/>
+    </div>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="demo"/>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••"/>
+    </div>
+
+    <div class="field">
+      <label>Grant Type</label>
+      <span class="hint">Usually "password" — do not change unless instructed</span>
+      <input type="text" id="grant_type" placeholder="password"/>
+    </div>
+  </div>
+
+  <hr class="sect-divider"/>
+
+  <!-- ── SECTION 2: Folder Paths ── -->
+  <div class="section">
+    <div class="section-label">Data Folder Paths</div>
+
+    <div class="folders-grid" id="folders-grid">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+
+  <!-- ── ACTION BAR ── -->
+  <div class="action-bar">
+    <button class="btn btn-ghost" id="btn-test" onclick="testConnection()">
+      <span class="spin" id="spin-test"></span>
+      Test Connection
+    </button>
+    <button class="btn btn-primary" id="btn-save" onclick="saveConfig()">
+      <span class="spin" id="spin-save"></span>
+      Save Settings
+    </button>
+    <div id="toast">
+      <div class="toast-dot"></div>
+      <span id="toast-msg"></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+
+// ── Folder definitions ──────────────────────────────────────────────────────
+// label shown in UI → config.json key
+const FOLDER_DEFS = [
+  { key: 'supplier',           label: 'Supplier' },
+  { key: 'customer',           label: 'Customer' },
+  { key: 'GCM',                label: 'GCM' },
+  { key: 'BR',                 label: 'BR' },
+  { key: 'customer_item',      label: 'Customer Item' },
+  { key: 'production_order',   label: 'Production Order' },
+  { key: 'purchase_order',     label: 'Purchase Order' },
+  { key: 'sales_order',        label: 'Sales Order' },
+  { key: 'supplier_item',      label: 'Supplier Item' },
+  { key: 'supplier_price_list',label: 'Supplier Price List' },
+  { key: 'item',               label: 'Item' },
+];
+
+// ── Build folder inputs ─────────────────────────────────────────────────────
+const fgrid = document.getElementById('folders-grid');
+FOLDER_DEFS.forEach(f => {
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  wrap.innerHTML = `
+    <label>${f.label}</label>
+    <input class="path-field" type="text" id="folder_${f.key}"
+           placeholder="../Data/${f.label.replace(/ /g,'_')}"/>
+  `;
+  fgrid.appendChild(wrap);
+});
+
+// ── Load current config from backend ───────────────────────────────────────
+async function loadConfig() {
+  try {
+    const res  = await fetch(`${API}/api/config`);
+    const data = await res.json();
+    if (!data.ok) { showToast('Could not load config: ' + data.error, false); return; }
+
+    const cfg = data.config;
+
+    document.getElementById('base_url').value   = cfg?.qad?.base_url              || '';
+    document.getElementById('client_id').value  = cfg?.qad?.auth?.client_id       || '';
+    document.getElementById('username').value   = cfg?.qad?.auth?.username        || '';
+    document.getElementById('password').value   = cfg?.qad?.auth?.password        || '';
+    document.getElementById('grant_type').value = cfg?.qad?.auth?.grant_type      || 'password';
+
+    const folders = cfg?.folders || {};
+    FOLDER_DEFS.forEach(f => {
+      const el = document.getElementById('folder_' + f.key);
+      if (el) el.value = folders[f.key] || '';
+    });
+
+  } catch(e) {
+    showToast('Backend not reachable — is main.py running?', false);
+  }
+}
+
+// ── Save config ─────────────────────────────────────────────────────────────
+async function saveConfig() {
+  const btn  = document.getElementById('btn-save');
+  const spin = document.getElementById('spin-save');
+
+  btn.disabled  = true;
+  spin.style.display = '';
+
+  const folders = {};
+  FOLDER_DEFS.forEach(f => {
+    const el = document.getElementById('folder_' + f.key);
+    if (el && el.value.trim()) folders[f.key] = el.value.trim();
+  });
+
+  const payload = {
+    base_url:   document.getElementById('base_url').value.trim(),
+    client_id:  document.getElementById('client_id').value.trim(),
+    username:   document.getElementById('username').value.trim(),
+    password:   document.getElementById('password').value.trim(),
+    grant_type: document.getElementById('grant_type').value.trim() || 'password',
+    folders,
+  };
+
+  try {
+    const res  = await fetch(`${API}/api/save-config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    showToast(data.ok ? 'Settings saved successfully' : data.error, data.ok);
+  } catch(e) {
+    showToast('Save failed — ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+  }
+}
+
+// ── Test connection ─────────────────────────────────────────────────────────
+async function testConnection() {
+  const btn  = document.getElementById('btn-test');
+  const spin = document.getElementById('spin-test');
+
+  btn.disabled = true;
+  spin.style.display = '';
+  showToast('Testing connection...', true);
+
+  try {
+    const res  = await fetch(`${API}/api/test-connection`, { method: 'POST' });
+    const data = await res.json();
+    showToast(data.ok ? data.message : data.error, data.ok);
+  } catch(e) {
+    showToast('Test failed — ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+  }
+}
+
+// ── Toast ───────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, ok) {
+  const el  = document.getElementById('toast');
+  const txt = document.getElementById('toast-msg');
+  el.style.display = 'flex';        // ← ADD THIS
+  el.className  = ok ? 'ok' : 'err';
+  txt.textContent = msg;
+  if (toastTimer) clearTimeout(toastTimer);
+  // Auto-hide success after 4s; errors stay until next action
+  if (ok) toastTimer = setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+loadConfig();
+</script>
+</body>
+</html>
