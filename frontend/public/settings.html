@@ -247,13 +247,13 @@ input.path-field:focus{
 
 <!-- NAV -->
 <nav id="nav">
-  <a href="index.html" class="nav-back">
+  <a href="/" class="nav-back">
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     Back to Loader
   </a>
   <span class="nav-title">Settings</span>
-  <a href="index.html" class="nav-logo">
-    <img src="public/logo.png" alt="Yash Technologies"/>
+  <a href="/" class="nav-logo">
+    <img src="/logo.png" alt="Yash Technologies"/>
   </a>
 </nav>
 
@@ -328,7 +328,9 @@ input.path-field:focus{
 </div>
 
 <script>
-const API = 'http://localhost:8000';
+
+//use localhost if wanna test locally
+const API = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://poscodataloader.up.railway.app';
 
 // ── Folder definitions ──────────────────────────────────────────────────────
 // label shown in UI → config.json key
