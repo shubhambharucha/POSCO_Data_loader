@@ -399,8 +399,10 @@ async function runOp(type){
   const sl=document.getElementById('sp-l');
   if(type==='validate')sv.style.display='';else sl.style.display='';
 
+  <!--fetch localhost8000 if you want to test locally--!>
+    
   try{
-    const res=await fetch('http://localhost:8000'+(type==='validate'?'/api/validate':'/api/load'),{
+    const res=await fetch('https://poscodataloader.up.railway.app'+(type==='validate'?'/api/validate':'/api/load'),{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({entities:[...sel]})
