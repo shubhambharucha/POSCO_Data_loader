@@ -27,7 +27,7 @@ def validate(file_path):
     wb = openpyxl.load_workbook(file_path)
     ws = wb.active
 
-    raw_headers = [cell.value for cell in ws[1]]
+    raw_headers = [cell.value for cell in ws[2]]
     header_row  = [str(h).strip() if h is not None else "" for h in raw_headers]
 
     if "Status" not in header_row:
@@ -50,7 +50,7 @@ def validate(file_path):
     rows_failed    = 0
     rows_skipped   = 0
 
-    for row_idx, row in enumerate(ws.iter_rows(min_row=2), start=2):
+    for row_idx, row in enumerate(ws.iter_rows(min_row=3), start=3):
         row_values = [cell.value for cell in row]
 
         if not any(row_values):

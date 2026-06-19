@@ -54,7 +54,7 @@ def validate(file_path):
     # -------------------------------------------------------------------
     # Read and normalize headers
     # -------------------------------------------------------------------
-    raw_headers = [cell.value for cell in ws[1]]
+    raw_headers = [cell.value for cell in ws[2]]
     header_row  = [str(h).strip() if h is not None else "" for h in raw_headers]
 
     # -------------------------------------------------------------------
@@ -93,7 +93,7 @@ def validate(file_path):
     # -------------------------------------------------------------------
     # Process rows
     # -------------------------------------------------------------------
-    for row_idx, row in enumerate(ws.iter_rows(min_row=2), start=2):
+    for row_idx, row in enumerate(ws.iter_rows(min_row=3), start=3):
 
         row_values = [cell.value for cell in row]
 
